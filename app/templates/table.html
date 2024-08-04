@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Data Table</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            color: #343a40;
+        }
+        .container {
+            margin-top: 20px;
+        }
+        .form-container {
+            margin-bottom: 20px;
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        table {
+            font-size: 0.9em;
+        }
+        .form-select {
+            margin-bottom: 10px;
+        }
+        h2 {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stock Data Table</h1>
+        <div class="form-container">
+            <form method="POST" action="{{ url_for('table_view') }}">
+                <div class="d-flex flex-wrap">
+                    <select name="symbol" class="form-select me-2" onchange="this.form.submit()">
+                        <option value="AAPL" {% if symbol == 'AAPL' %}selected{% endif %}>Apple (AAPL)</option>
+                        <option value="GOOGL" {% if symbol == 'GOOGL' %}selected{% endif %}>Alphabet (GOOGL)</option>
+                        <option value="MSFT" {% if symbol == 'MSFT' %}selected{% endif %}>Microsoft (MSFT)</option>
+                        <option value="AMZN" {% if symbol == 'AMZN' %}selected{% endif %}>Amazon (AMZN)</option>
+                        <option value="TSLA" {% if symbol == 'TSLA' %}selected{% endif %}>Tesla (TSLA)</option>
+                        <option value="META" {% if symbol == 'META' %}selected{% endif %}>Meta (META)</option>
+                        <option value="KO" {% if symbol == 'KO' %}selected{% endif %}>Coca-Cola (KO)</option>
+                        <option value="PYPL" {% if symbol == 'PYPL' %}selected{% endif %}>Pay-Pal (PYPL)</option>
+                        <option value="NFLX" {% if symbol == 'NFLX' %}selected{% endif %}>Netflix (NFLX)</option>
+                        <option value="INTC" {% if symbol == 'INTC' %}selected{% endif %}>Intel (INTC)</option>
+                    </select>
+                    <select name="period" class="form-select" onchange="this.form.submit()">
+                        <option value="10" {% if period == '10' %}selected{% endif %}>10 Days</option>
+                        <option value="15" {% if period == '15' %}selected{% endif %}>15 Days</option>
+                        <option value="20" {% if period == '20' %}selected{% endif %}>20 Days</option>
+                        <option value="60" {% if period == '60' %}selected{% endif %}>2 Months</option>
+                        <option value="180" {% if period == '180' %}selected{% endif %}>6 Months</option>
+                        <option value="365" {% if period == '365' %}selected{% endif %}>1 Year</option>
+                        <option value="730" {% if period == '730' %}selected{% endif %}>2 Year</option>
+                        <!-- Add more periods as needed -->
+                    </select>
+                </div>
+            </form>
+        </div>
+        <h2>Last {{period}} Days Data</h2>
+        <form method="POST" action="{{ url_for('download_csv') }}">
+            <input type="hidden" name="symbol" value="{{ symbol }}">
+            <input type="hidden" name="period" value="{{ period }}">
+            <button type="submit" class="btn btn-primary mt-3">Download CSV</button>
+        </form>
+        <div class="table-container">
+            <table class="table table-light table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Open</th>
+                        <th>High</th>
+                        <th>Low</th>
+                        <th>Close</th>
+                        <th>Volume</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in last_10_days %}
+                    <tr>
+                        <td>{{ row.Date }}</td>
+                        <td>{{ row.Open }}</td>
+                        <td>{{ row.High }}</td>
+                        <td>{{ row.Low }}</td>
+                        <td>{{ row.Close }}</td>
+                        <td>{{ row.Volume }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <h2>Predictions for Next 7 Days</h2>
+        <div class="table-container">
+            <table class="table table-light table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Open</th>
+                        <th>High</th>
+                        <th>Low</th>
+                        <th>Close</th>
+                        <th>Volume</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in predicted_data %}
+                    <tr>
+                        <td>{{ row.Date }}</td>
+                        <td>{{ row.Open }}</td>
+                        <td>{{ row.High }}</td>
+                        <td>{{ row.Low }}</td>
+                        <td>{{ row.Close }}</td>
+                        <td>{{ row.Volume }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="graph-container" style="height: 700px;">
+            {{ graph_html | safe }}
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+{% endblock %}

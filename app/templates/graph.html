@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <html>
+        <h1>Stock Data Graph</h1>
+        <form method="POST" action="{{ url_for('graph_view') }}">
+            <select name="symbol" class="form-select" onchange="this.form.submit()">
+                <option value="AAPL" {% if symbol == 'AAPL' %}selected{% endif %}>Apple (AAPL)</option>
+                            <option value="GOOGL" {% if symbol == 'GOOGL' %}selected{% endif %}>Alphabet (GOOGL)</option>
+                            <option value="MSFT" {% if symbol == 'MSFT' %}selected{% endif %}>Microsoft (MSFT)</option>
+                            <option value="AMZN" {% if symbol == 'AMZN' %}selected{% endif %}>Amazon (AMZN)</option>
+                            <option value="TSLA" {% if symbol == 'TSLA' %}selected{% endif %}>Tesla (TSLA)</option>
+                            <option value="META" {% if symbol == 'META' %}selected{% endif %}>Meta (META)</option>
+                            <option value="KO" {% if symbol == 'KO' %}selected{% endif %}>Coca-Cola (KO)</option>
+                            <option value="PYPL" {% if symbol == 'PYPL' %}selected{% endif %}>Pay-Pal (PYPL)</option>
+                            <option value="NFLX" {% if symbol == 'NFLX' %}selected{% endif %}>Netflix (NFLX)</option>
+                            <option value="INTC" {% if symbol == 'INTC' %}selected{% endif %}>Intel (INTC)</option>
+                <!-- Add more stocks as needed -->
+            </select>
+            <select name="period" class="form-select" onchange="this.form.submit()">
+                <option value="1M" {% if period == '1M' %}selected{% endif %}>1 Month</option>
+                <option value="6M" {% if period == '6M' %}selected{% endif %}>6 Months</option>
+                <option value="1Y" {% if period == '1Y' %}selected{% endif %}>1 Year</option>
+                <!-- Add more periods as needed -->
+            </select>
+        </form>
+        <div class="chart-container">
+            {{ graph_html|safe }}
+        </div>
+    </html>
+{% endblock %}
