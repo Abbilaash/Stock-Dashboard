@@ -12,7 +12,7 @@ This project is an interactive dashboard for stock market trends. It uses regres
 ## Technologies Used
 - **Backend:** Flask
 - **Frontend:** HTML, CSS, Bootstrap
-- **Machine Learning:** LSTM Neural Networks
+- **Machine Learning:** Linear Regression (Scikit-learn)
 - **Data Visualization:** Plotly, Matplotlib
 - **Web Scraping:** BeautifulSoup, Requests
 
