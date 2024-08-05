@@ -5,7 +5,7 @@ This project is an interactive dashboard for stock market trends. It uses regres
 
 ## Features
 - **Responsive Design:** The website is fully responsive, ensuring a seamless experience on mobile, laptop, and desktop devices.
-- **Stock Predictions:** Using LSTM for accurate stock price predictions.
+- **Stock Predictions:** Using Regression for accurate stock price predictions.
 - **Data Visualization:** Interactive charts and graphs for visualizing stock trends and predictions.
 - **Additional Features:** Extra functionalities to provide a comprehensive stock market analysis experience.
 
