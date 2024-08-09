@@ -7,22 +7,41 @@ import plotly.io as pio
 from flask import Flask, render_template, request, redirect, url_for, send_file
 from app import app
 import app.func as func
+from bs4 import BeautifulSoup
 
-def fetch_stock_data(symbol, start_date, end_date):
-    start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%Y-%m-%d')
+
+df = []
+
+def fetch_stock_data(symbol, days, end_date):
     end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%Y-%m-%d')
-    url = f'https://query1.finance.yahoo.com/v7/finance/download/{symbol}?period1={int(datetime.datetime.strptime(start_date, "%Y-%m-%d").timestamp())}&period2={int(datetime.datetime.strptime(end_date, "%Y-%m-%d").timestamp())}&interval=1d&events=history'
+    url = f'https://finance.yahoo.com/quote/{symbol}/history?p={symbol}'
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
-        data = io.StringIO(response.text)
-        df = pd.read_csv(data)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        table = soup.find('table', 'table yf-ewueuo')
+        
+        rows = table.find_all('tr')
+        
+        data = []
+        for row in rows[1:]:  # Skip header row
+            cols = row.find_all('td')
+            cols = [col.text.strip() for col in cols]
+            if len(cols)==7:
+                data.append(cols)
+
+        df = pd.DataFrame(data, columns=['Date', 'Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume'])
+        df['Volume'] = df['Volume'].str.replace(',', '')
+        df['Volume'] = df['Volume'].astype(float)      # Convert volume string to float
+        df = df.iloc[::-1].reset_index(drop=True)
         return df
+
     else:
         print(f"Failed to fetch data: {response.status_code}")
         return None
+
 
 def plot_candlestick_chart(df, symbol):
     if df is not None:
@@ -87,26 +106,22 @@ def table_view():
     global last_days
     end_date = datetime.datetime.today().strftime('%Y-%m-%d')
     if period == '10':
-        start_date = (datetime.datetime.today() - datetime.timedelta(days=10)).strftime('%Y-%m-%d')
+        days = 10
     elif period == '15':
-        start_date = (datetime.datetime.today() - datetime.timedelta(days=15)).strftime('%Y-%m-%d')
+        days = 15
     elif period == '20':
-        start_date = (datetime.datetime.today() - datetime.timedelta(days=20)).strftime('%Y-%m-%d')
+        days = 20
     elif period == '60':
-        start_date = (datetime.datetime.today() - datetime.timedelta(days=60)).strftime('%Y-%m-%d')
+        days = 60
     elif period == '180':
-        start_date = (datetime.datetime.today() - datetime.timedelta(days=180)).strftime('%Y-%m-%d')
+        days = 180
     elif period == '365':
-        start_date = (datetime.datetime.today() - datetime.timedelta(days=365)).strftime('%Y-%m-%d')
-    elif period == '730':
-        start_date = (datetime.datetime.today() - datetime.timedelta(days=730)).strftime('%Y-%m-%d')
+        days = 365
     else:
-        start_date = (datetime.datetime.today() - datetime.timedelta(days=10)).strftime('%Y-%m-%d')
-    df = fetch_stock_data(symbol, start_date, end_date)
-    if df is not None:
-        last_days = df.tail(int(period)).to_dict('records')[::-1]
-    else:
-        last_days = []
+        days = 10
+
+    df = fetch_stock_data(symbol, days, end_date)
+    last_days = df.tail(days)
     
     df = fetch_stock_data(symbol, (datetime.datetime.today() - datetime.timedelta(days=1500)).strftime('%Y-%m-%d'), end_date)
     predicted_data = func.predict(df)
@@ -163,15 +178,22 @@ def graph_view():
         symbol = 'AAPL'
         period = '1M'
     end_date = datetime.datetime.today().strftime('%Y-%m-%d')
+
     if period == '1M':
-        start_date = (datetime.datetime.today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d')
+        df = df.tail(30)
+        days = 30
     elif period == '6M':
-        start_date = (datetime.datetime.today() - datetime.timedelta(days=180)).strftime('%Y-%m-%d')
+        df = df.tail(180)
+        days = 180
     elif period == '1Y':
-        start_date = (datetime.datetime.today() - datetime.timedelta(days=365)).strftime('%Y-%m-%d')
+        df = df.tail(365)
+        days = 365
     else:
-        start_date = (datetime.datetime.today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d')
-    df = fetch_stock_data(symbol, start_date, end_date)
+        df = df.tail(30)
+        days = 30
+    df = fetch_stock_data(symbol, days, end_date)
+    
+
     graph_html = plot_candlestick_chart(df, symbol)
     return render_template('graph.html', symbol=symbol, period=period, graph_html=graph_html)
 
