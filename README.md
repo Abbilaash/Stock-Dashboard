@@ -21,7 +21,7 @@ This project is an interactive dashboard for stock market trends. It uses regres
 1. **Clone the repository:**
     ```bash
     git clone https://github.com/Abbilaash/Stock-Dashboard.git
-    cd stock-market-prediction
+    cd Stock-Dashboard
     ```
 
 2. **Create a virtual environment:**
